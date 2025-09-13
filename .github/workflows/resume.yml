@@ -38,7 +38,7 @@ jobs:
           pandoc resumes/private/resume_private.md -o resumes/private/resume.pdf
 
       - name: Upload all resumes
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: resumes
           path: resumes/
