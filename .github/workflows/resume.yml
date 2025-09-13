@@ -1,12 +1,13 @@
-name: Build Resume
+name: Build Resumes
 
 on:
   push:
     paths:
       - "resume.md"
+      - "resumes/private/resume_private.md"
 
 jobs:
-  build-resume:
+  build-resumes:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,16 +19,35 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y pandoc texlive-latex-base texlive-xetex texlive-fonts-recommended
 
-      - name: Convert to DOCX
+      # Federal Resume
+      - name: Build Federal Resume (DOCX)
         run: |
           pandoc resume.md -o resumes/federal/resume.docx
 
-      - name: Convert to PDF
+      - name: Build Federal Resume (PDF)
         run: |
           pandoc resume.md -o resumes/federal/resume.pdf
 
-      - name: Upload build artifacts
+      # Private Resume
+      - name: Build Private Resume (DOCX)
+        run: |
+          pandoc resumes/private/resume_private.md -o resumes/private/resume.docx
+
+      - name: Build Private Resume (PDF)
+        run: |
+          pandoc resumes/private/resume_private.md -o resumes/private/resume.pdf
+
+      - name: Upload all resumes
         uses: actions/upload-artifact@v3
         with:
           name: resumes
-          path: resumes/federal/
+          path: resumes/
+
+      # Build all resume variants
+      - name: Build Variant Resumes
+        run: |
+          for file in resumes/variants/*.md; do
+            name=$(basename "$file" .md)
+            pandoc "$file" -o "resumes/variants/${name}.docx"
+            pandoc "$file" -o "resumes/variants/${name}.pdf"
+          done
