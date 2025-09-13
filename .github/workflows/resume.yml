@@ -5,6 +5,7 @@ on:
     paths:
       - "resume.md"
       - "resumes/private/resume_private.md"
+      - "resumes/variants/*.md"
 
 jobs:
   build-resumes:
@@ -20,30 +21,18 @@ jobs:
           sudo apt-get install -y pandoc texlive-latex-base texlive-xetex texlive-fonts-recommended
 
       # Federal Resume
-      - name: Build Federal Resume (DOCX)
+      - name: Build Federal Resume (DOCX + PDF)
         run: |
           pandoc resume.md -o resumes/federal/resume.docx
-
-      - name: Build Federal Resume (PDF)
-        run: |
           pandoc resume.md -o resumes/federal/resume.pdf
 
       # Private Resume
-      - name: Build Private Resume (DOCX)
+      - name: Build Private Resume (DOCX + PDF)
         run: |
           pandoc resumes/private/resume_private.md -o resumes/private/resume.docx
-
-      - name: Build Private Resume (PDF)
-        run: |
           pandoc resumes/private/resume_private.md -o resumes/private/resume.pdf
 
-      - name: Upload all resumes
-        uses: actions/upload-artifact@v4
-        with:
-          name: resumes
-          path: resumes/
-
-      # Build all resume variants
+      # Variant Resumes
       - name: Build Variant Resumes
         run: |
           for file in resumes/variants/*.md; do
@@ -51,3 +40,20 @@ jobs:
             pandoc "$file" -o "resumes/variants/${name}.docx"
             pandoc "$file" -o "resumes/variants/${name}.pdf"
           done
+
+      # Copy resumes into docs for GitHub Pages
+      - name: Copy resumes to docs
+        run: |
+          mkdir -p docs/federal docs/private docs/variants
+          cp resumes/federal/*.pdf docs/federal/
+          cp resumes/federal/*.docx docs/federal/
+          cp resumes/private/*.pdf docs/private/
+          cp resumes/private/*.docx docs/private/
+          cp resumes/variants/*.pdf docs/variants/
+          cp resumes/variants/*.docx docs/variants/
+
+      - name: Upload all resumes as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: resumes
+          path: resumes/
